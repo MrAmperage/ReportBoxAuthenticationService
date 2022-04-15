@@ -1,0 +1,2 @@
+# ReportBoxAuthenticationService
+Сервис аутентификации для ReportBox
