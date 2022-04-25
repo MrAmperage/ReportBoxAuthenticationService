@@ -14,9 +14,14 @@ func main() {
 		fmt.Println(ErrorInitService)
 	}
 
-	ErrorStartService := AuthenticationService.Start()
-	if ErrorStartService != nil {
+	ErrorRabbitMQ := AuthenticationService.StartRabbitMQ()
+	if ErrorRabbitMQ != nil {
 
-		fmt.Println(ErrorStartService)
+		fmt.Println(ErrorRabbitMQ)
+	}
+	ErrorWebServer := AuthenticationService.StartWebServer()
+	if ErrorInitService != nil {
+
+		fmt.Println(ErrorWebServer)
 	}
 }
