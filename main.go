@@ -14,7 +14,11 @@ func main() {
 	if ErrorInitService != nil {
 		fmt.Println(ErrorInitService)
 	}
+	ErrorDatabaseConnection := AuthenticationService.StartDatabaseConnections()
+	if ErrorDatabaseConnection != nil {
 
+		fmt.Println(ErrorDatabaseConnection)
+	}
 	ErrorRabbitMQ := AuthenticationService.StartRabbitMQ()
 	if ErrorRabbitMQ != nil {
 
@@ -35,6 +39,7 @@ func main() {
 		}
 
 	})
+
 	ErrorWebServer := AuthenticationService.StartWebServer()
 	if ErrorInitService != nil {
 
