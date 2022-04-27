@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/MrAmperage/GoWebStruct/ApplicationCore"
+	"github.com/MrAmperage/ReportBoxAuthenticationService/ORM"
 	"github.com/streadway/amqp"
 )
 
@@ -16,12 +18,13 @@ func main() {
 		fmt.Println(ErrorInitService)
 		os.Exit(0)
 	}
-	ErrorDatabaseConnection := AuthenticationService.StartDatabaseConnections()
+	ErrorDatabaseConnection := AuthenticationService.WebCore.PostgreSQL.StartDatabaseConnections()
 	if ErrorDatabaseConnection != nil {
 
 		fmt.Println(ErrorDatabaseConnection)
 		os.Exit(0)
 	}
+
 	ErrorRabbitMQ := AuthenticationService.StartRabbitMQ()
 	if ErrorRabbitMQ != nil {
 
@@ -33,10 +36,25 @@ func main() {
 		fmt.Println(Error)
 	}
 	Subscribe.MessageProcessing(func(RabbitMQMessage amqp.Delivery) {
-		fmt.Println(string(RabbitMQMessage.Body))
+		var User ORM.User
+		json.Unmarshal(RabbitMQMessage.Body, &User)
+		fmt.Println(User.Username)
+		PosgreSQL, Error := AuthenticationService.WebCore.PostgreSQL.FindByName("ReportBoxDatabase")
+		if Error != nil {
+
+			fmt.Println(Error)
+		}
+		var Response string
+		ResponseUser, Error := ORM.GetUserByName(PosgreSQL.ConnectionPool, User.Username)
+		fmt.Println(ResponseUser.Username)
+		Response = ResponseUser.Username
+		if Error != nil {
+			fmt.Println(Error)
+			Response = Error.Error()
+		}
 		ErrorPublish := Subscribe.ChanelLink.Publish("", RabbitMQMessage.ReplyTo, false, false, amqp.Publishing{
 			CorrelationId: RabbitMQMessage.CorrelationId,
-			Body:          []byte("Ответное сообщение"),
+			Body:          []byte(Response),
 		})
 		if ErrorPublish != nil {
 			fmt.Println(ErrorPublish)
