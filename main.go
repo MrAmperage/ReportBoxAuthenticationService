@@ -45,11 +45,12 @@ func main() {
 			fmt.Println(Error)
 		}
 		var Response string
-		ResponseUser, Error := ORM.GetUserByName(PosgreSQL.ConnectionPool, User.Username)
+		UserORM := &ORM.UserORM{}
+		ResponseUser, Error := UserORM.GetUserByName(PosgreSQL.ConnectionPool, User.Username)
 		fmt.Println(ResponseUser.Username)
 		Response = ResponseUser.Username
 		if Error != nil {
-			fmt.Println(Error)
+
 			Response = Error.Error()
 		}
 		ErrorPublish := Subscribe.ChanelLink.Publish("", RabbitMQMessage.ReplyTo, false, false, amqp.Publishing{
