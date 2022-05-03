@@ -1,12 +1,11 @@
 package Controllers
 
 import (
-	"errors"
-
+	"github.com/MrAmperage/GoWebStruct/WebCore"
 	"github.com/streadway/amqp"
 )
 
 func Authentication(Message amqp.Delivery) (Data any, Error error) {
 
-	return nil, errors.New("123")
+	return WebCore.AuthenticationData{AuthenticationToken: "123"}, nil
 }
