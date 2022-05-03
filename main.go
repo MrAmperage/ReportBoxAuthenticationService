@@ -1,13 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
 	"github.com/MrAmperage/GoWebStruct/ApplicationCore"
-	"github.com/MrAmperage/ReportBoxAuthenticationService/ORM"
-	"github.com/streadway/amqp"
+	"github.com/MrAmperage/ReportBoxAuthenticationService/Controllers"
 )
 
 func main() {
@@ -35,33 +33,8 @@ func main() {
 	if Error != nil {
 		fmt.Println(Error)
 	}
-	Subscribe.MessageProcessing(func(RabbitMQMessage amqp.Delivery) {
-		var User ORM.User
-		json.Unmarshal(RabbitMQMessage.Body, &User)
-		fmt.Println(User.Username)
-		PosgreSQL, Error := AuthenticationService.WebCore.PostgreSQL.FindByName("ReportBoxDatabase")
-		if Error != nil {
-
-			fmt.Println(Error)
-		}
-		var Response string
-		UserORM := &ORM.UserORM{}
-		ResponseUser, Error := UserORM.GetUserByName(PosgreSQL.ConnectionPool, User.Username)
-		fmt.Println(ResponseUser.Username)
-		Response = ResponseUser.Username
-		if Error != nil {
-
-			Response = Error.Error()
-		}
-		ErrorPublish := Subscribe.ChanelLink.Publish("", RabbitMQMessage.ReplyTo, false, false, amqp.Publishing{
-			CorrelationId: RabbitMQMessage.CorrelationId,
-			Body:          []byte(Response),
-		})
-		if ErrorPublish != nil {
-			fmt.Println(ErrorPublish)
-		}
-
-	})
+	Subscribe.MessageEmmiter.Handler("Authentication", Controllers.Authentication).Method("POST")
+	Subscribe.MessageProcessing()
 
 	ErrorWebServer := AuthenticationService.StartWebServer()
 	if ErrorInitService != nil {
