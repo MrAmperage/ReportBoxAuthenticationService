@@ -17,6 +17,13 @@ func main() {
 		fmt.Println(ErrorInitService)
 		os.Exit(0)
 	}
+	UserORM := &ORM.UserORM{Name: "UserORM"}
+	ReportBoxDatabase, Error := AuthenticationService.WebCore.PostgreSQL.FindByName("ReportBoxDatabase")
+	if Error != nil {
+		fmt.Println(Error)
+	}
+
+	ReportBoxDatabase.ORMs.Add(UserORM)
 	ErrorDatabaseConnection := AuthenticationService.WebCore.PostgreSQL.StartDatabaseConnections()
 	if ErrorDatabaseConnection != nil {
 
@@ -30,14 +37,14 @@ func main() {
 		fmt.Println(ErrorRabbitMQ)
 		os.Exit(0)
 	}
-	ORM := &ORM.UserORM{}
-	ORM.InitORM(&AuthenticationService.WebCore.PostgreSQL)
+
 	Subscribe, Error := AuthenticationService.WebCore.RabbitMQ.RabbitMQChanel.GetSubscribeByQueueName("AuthenticationQueue")
 	if Error != nil {
 		fmt.Println(Error)
 	}
 	Subscribe.MessageEmmiter.Handler("Authentication", Controllers.Authentication).Method("POST")
-	Subscribe.MessageProcessing(ORM)
+
+	Subscribe.MessageProcessing(&ReportBoxDatabase.ORMs)
 
 	ErrorWebServer := AuthenticationService.StartWebServer()
 	if ErrorInitService != nil {
