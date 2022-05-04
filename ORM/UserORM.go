@@ -3,6 +3,7 @@ package ORM
 import (
 	"errors"
 
+	"github.com/MrAmperage/GoWebStruct/WebCore/Modules/ORMModule"
 	"gorm.io/gorm"
 )
 
@@ -11,7 +12,9 @@ type User struct {
 	Password string `gorm:"not null;password"`
 	Enabled  bool   `gorm:"not null;enabled"`
 }
-type UserORM struct{}
+type UserORM struct {
+	ORMModule.ORM
+}
 
 func (UserORM *UserORM) GetUsers(ConnectionPoolLink *gorm.DB) (Users []User) {
 	ConnectionPoolLink.Find(&Users)

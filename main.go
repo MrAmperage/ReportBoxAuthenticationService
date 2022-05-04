@@ -6,6 +6,7 @@ import (
 
 	"github.com/MrAmperage/GoWebStruct/ApplicationCore"
 	"github.com/MrAmperage/ReportBoxAuthenticationService/Controllers"
+	"github.com/MrAmperage/ReportBoxAuthenticationService/ORM"
 )
 
 func main() {
@@ -29,12 +30,14 @@ func main() {
 		fmt.Println(ErrorRabbitMQ)
 		os.Exit(0)
 	}
+	ORM := &ORM.UserORM{}
+	ORM.InitORM(&AuthenticationService.WebCore.PostgreSQL)
 	Subscribe, Error := AuthenticationService.WebCore.RabbitMQ.RabbitMQChanel.GetSubscribeByQueueName("AuthenticationQueue")
 	if Error != nil {
 		fmt.Println(Error)
 	}
 	Subscribe.MessageEmmiter.Handler("Authentication", Controllers.Authentication).Method("POST")
-	Subscribe.MessageProcessing()
+	Subscribe.MessageProcessing(ORM)
 
 	ErrorWebServer := AuthenticationService.StartWebServer()
 	if ErrorInitService != nil {
