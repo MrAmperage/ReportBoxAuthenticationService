@@ -1,7 +1,7 @@
 package Controllers
 
 import (
-	"fmt"
+	"encoding/json"
 
 	"github.com/MrAmperage/GoWebStruct/WebCore"
 	"github.com/MrAmperage/GoWebStruct/WebCore/Modules/ORMModule"
@@ -10,13 +10,16 @@ import (
 )
 
 func Authentication(Message amqp.Delivery, ORMs ORMModule.ORMArray) (Data any, Error error) {
+	var AuthenticationRequest WebCore.AuthenticationRequest
+	var AuthenticationResponse WebCore.AuthenticationResponse
 	ORMElement, _ := ORMs.FindByName("UserORM")
 	UserORM := ORMElement.(*ORM.UserORM)
-	User, Error := UserORM.GetUserByName("front")
+	json.Unmarshal(Message.Body, &AuthenticationRequest)
+	Data, Error = UserORM.GetUserByName(AuthenticationRequest.Username)
 	if Error != nil {
 		return
 	}
-	fmt.Println(User.Username)
+	AuthenticationResponse.AuthenticationToken = "Токен авторизации"
 
-	return WebCore.AuthenticationData{AuthenticationToken: "123"}, nil
+	return AuthenticationResponse, Error
 }

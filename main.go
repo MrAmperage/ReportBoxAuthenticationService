@@ -17,7 +17,8 @@ func main() {
 		fmt.Println(ErrorInitService)
 		os.Exit(0)
 	}
-	UserORM := &ORM.UserORM{Name: "UserORM"}
+	UserORM := &ORM.UserORM{}
+	UserORM.SetName("UserORM")
 	ReportBoxDatabase, Error := AuthenticationService.WebCore.PostgreSQL.FindByName("ReportBoxDatabase")
 	if Error != nil {
 		fmt.Println(Error)
